@@ -1,75 +1,101 @@
-const canvas = document.querySelector('canvas');
-const ctx = canvas.getContext('2d');
+const canvas = document.querySelector("canvas");
+const ctx = canvas.getContext("2d");
+const inputCols = document.getElementById("inp-cols");
+const inputRows = document.getElementById("inp-rows");
 
-const resolution = 10;
-canvas.width = 800;
-canvas.height = 800;
+const COLS = Number(inputCols.value);
+const ROWS = Number(inputRows.value);
+const resolution = 20;
 
-const COLS = canvas.width / resolution;
-const ROWS = canvas.height / resolution;
+canvas.width = COLS * resolution;
+canvas.height = ROWS * resolution;
 
-function buildGrid() {
-  return new Array(COLS).fill(null)
-    .map(() => new Array(ROWS).fill(null)
-      .map(() => Math.floor(Math.random() * 2)));
+function buildMatrix() {
+  return new Array(COLS)
+    .fill(null)
+    .map(() =>
+      new Array(ROWS).fill(null).map(() => Math.floor(Math.random() * 2))
+    );
 }
 
-let grid = buildGrid();
+let matrix = buildMatrix();
 
-requestAnimationFrame(update);
-
-function update() {
-  grid = nextGen(grid);
-  render(grid);
-  requestAnimationFrame(update);
+function cycle(i, n) {
+  return i < 0 ? n + i : i % n;
 }
 
-function nextGen(grid) {
-  const nextGen = grid.map(arr => [...arr]);
+function computeNextGeneration(prevGen) {
+  const nextGen = prevGen.map((row) => [...row]);
 
-  for (let col = 0; col < grid.length; col++) {
-    for (let row = 0; row < grid[col].length; row++) {
-      const cell = grid[col][row];
-      let numNeighbours = 0;
+  for (let col = 0; col < prevGen.length; col++) {
+    for (let row = 0; row < prevGen[col].length; row++) {
+      const cell = prevGen[col][row];
+      let neighboursCount = 0;
+
       for (let i = -1; i < 2; i++) {
         for (let j = -1; j < 2; j++) {
+          // ignore the current cell
           if (i === 0 && j === 0) {
             continue;
           }
-          const x_cell = col + i;
-          const y_cell = row + j;
 
-          if (x_cell >= 0 && y_cell >= 0 && x_cell < COLS && y_cell < ROWS) {
-            const currentNeighbour = grid[col + i][row + j];
-            numNeighbours += currentNeighbour;
-          }
+          const x = cycle(col + i, COLS);
+          const y = cycle(row + j, ROWS);
+
+          const currentNeighbour = prevGen[x][y];
+          neighboursCount += currentNeighbour;
         }
       }
 
       // rules
-      if (cell === 1 && numNeighbours < 2) {
+      if (cell === 1 && neighboursCount < 2) {
         nextGen[col][row] = 0;
-      } else if (cell === 1 && numNeighbours > 3) {
+      } else if (cell === 1 && neighboursCount > 3) {
         nextGen[col][row] = 0;
-      } else if (cell === 0 && numNeighbours === 3) {
+      } else if (cell === 0 && neighboursCount === 3) {
         nextGen[col][row] = 1;
       }
     }
   }
+
   return nextGen;
 }
 
-function render(grid) {
-  for (let col = 0; col < grid.length; col++) {
-    for (let row = 0; row < grid[col].length; row++) {
-      const cell = grid[col][row];
+function render(matrix) {
+  for (let col = 0; col < matrix.length; col++) {
+    for (let row = 0; row < matrix[col].length; row++) {
+      const cell = matrix[col][row];
 
       ctx.beginPath();
       ctx.rect(col * resolution, row * resolution, resolution, resolution);
-      ctx.fillStyle = cell ? 'black' : 'white';
+      ctx.fillStyle = cell ? "black" : "white";
       ctx.fill();
-      // ctx.stroke();
+
+      if (!cell) {
+        ctx.strokeStyle = "black";
+        ctx.stroke();
+      }
     }
   }
 }
 
+function update() {
+  matrix = computeNextGeneration(matrix);
+  render(matrix);
+}
+
+let interval;
+
+playBtn.onclick = () => {
+  interval = setInterval(update, 500);
+  playBtn.disabled = true;
+  stopBtn.disabled = false;
+};
+
+stopBtn.disabled = true;
+
+stopBtn.onclick = () => {
+  stopBtn.disabled = true;
+  playBtn.disabled = false;
+  clearInterval(interval);
+};

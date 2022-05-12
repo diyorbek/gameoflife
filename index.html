@@ -1,11 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Game of Life</title>
-</head>
-<body>
-  <canvas></canvas>
-  <script src="index.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Game of Life</title>
+  </head>
+  <body>
+    <div>
+      <label>
+        <span>Rows: </span>
+        <input id="inp-rows" type="number" min="3" value="20" />
+      </label>
+      <label>
+        <span>Columns: </span>
+        <input id="inp-cols" type="number" min="3" value="20" />
+      </label>
+    </div>
+
+    <div>
+      <label>
+        <span>Rows: </span>
+        <input id="inp-n" type="number" min="3" value="20" />
+      </label>
+    </div>
+
+    <div>
+      <button id="playBtn">Play</button>
+      <button id="stopBtn">Stop</button>
+    </div>
+
+    <div>
+      <canvas></canvas>
+    </div>
+    <script src="index.js"></script>
+  </body>
 </html>
