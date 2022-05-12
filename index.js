@@ -14,8 +14,14 @@ let ALIVE_NEIGBOUR_COUNT = Number(inputAlive.value);
 canvas.width = COLS * cellSize;
 canvas.height = ROWS * cellSize;
 
-function buildMatrix() {
-  return new Array(COLS).fill(null).map(() => new Array(ROWS).fill(0));
+function buildMatrix(randomize) {
+  return new Array(COLS)
+    .fill(null)
+    .map(() =>
+      new Array(ROWS)
+        .fill(null)
+        .map(() => (randomize ? Math.floor(Math.random() * 1.3) : 0))
+    );
 }
 
 let matrix = buildMatrix();
@@ -64,7 +70,6 @@ function computeNextGeneration(prevGen, surviveCounts, aliveCount) {
 }
 
 function render(matrix) {
-  console.log(matrix.length);
   for (let col = 0; col < matrix.length; col++) {
     for (let row = 0; row < matrix[col].length; row++) {
       const cell = matrix[col][row];
@@ -95,6 +100,7 @@ let interval;
 
 playBtn.onclick = () => {
   interval = setInterval(update, 500);
+  randomizeBtn.disabled = true;
   playBtn.disabled = true;
   inputCols.disabled = true;
   inputRows.disabled = true;
@@ -105,6 +111,7 @@ stopBtn.disabled = true;
 
 stopBtn.onclick = () => {
   stopBtn.disabled = true;
+  randomizeBtn.disabled = false;
   playBtn.disabled = false;
   inputCols.disabled = false;
   inputRows.disabled = false;
@@ -120,6 +127,11 @@ canvas.onclick = ({ offsetX, offsetY }) => {
 
     render(matrix);
   }
+};
+
+randomizeBtn.onclick = () => {
+  matrix = buildMatrix(true);
+  render(matrix);
 };
 
 inputRows.onchange = ({ target }) => {
