@@ -2,20 +2,20 @@ const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
 const inputCols = document.getElementById("inp-cols");
 const inputRows = document.getElementById("inp-rows");
+const inputSurvive = document.getElementById("inp-survive");
+const inputAlive = document.getElementById("inp-alive");
 
-const COLS = Number(inputCols.value);
-const ROWS = Number(inputRows.value);
-const resolution = 20;
+const cellSize = 40;
+let COLS = Number(inputCols.value);
+let ROWS = Number(inputRows.value);
+let SURVIVE_NEIGBOUR_COUNT = inputSurvive.value.split("-").map(Number);
+let ALIVE_NEIGBOUR_COUNT = Number(inputAlive.value);
 
-canvas.width = COLS * resolution;
-canvas.height = ROWS * resolution;
+canvas.width = COLS * cellSize;
+canvas.height = ROWS * cellSize;
 
 function buildMatrix() {
-  return new Array(COLS)
-    .fill(null)
-    .map(() =>
-      new Array(ROWS).fill(null).map(() => Math.floor(Math.random() * 2))
-    );
+  return new Array(COLS).fill(null).map(() => new Array(ROWS).fill(0));
 }
 
 let matrix = buildMatrix();
@@ -24,7 +24,7 @@ function cycle(i, n) {
   return i < 0 ? n + i : i % n;
 }
 
-function computeNextGeneration(prevGen) {
+function computeNextGeneration(prevGen, surviveCounts, aliveCount) {
   const nextGen = prevGen.map((row) => [...row]);
 
   for (let col = 0; col < prevGen.length; col++) {
@@ -48,12 +48,14 @@ function computeNextGeneration(prevGen) {
       }
 
       // rules
-      if (cell === 1 && neighboursCount < 2) {
-        nextGen[col][row] = 0;
-      } else if (cell === 1 && neighboursCount > 3) {
-        nextGen[col][row] = 0;
-      } else if (cell === 0 && neighboursCount === 3) {
-        nextGen[col][row] = 1;
+      if (cell === 1) {
+        if (!surviveCounts.some((n) => n === neighboursCount)) {
+          nextGen[col][row] = 0;
+        }
+      } else {
+        if (neighboursCount === aliveCount) {
+          nextGen[col][row] = 1;
+        }
       }
     }
   }
@@ -62,12 +64,13 @@ function computeNextGeneration(prevGen) {
 }
 
 function render(matrix) {
+  console.log(matrix.length);
   for (let col = 0; col < matrix.length; col++) {
     for (let row = 0; row < matrix[col].length; row++) {
       const cell = matrix[col][row];
 
       ctx.beginPath();
-      ctx.rect(col * resolution, row * resolution, resolution, resolution);
+      ctx.rect(col * cellSize, row * cellSize, cellSize, cellSize);
       ctx.fillStyle = cell ? "black" : "white";
       ctx.fill();
 
@@ -80,7 +83,11 @@ function render(matrix) {
 }
 
 function update() {
-  matrix = computeNextGeneration(matrix);
+  matrix = computeNextGeneration(
+    matrix,
+    SURVIVE_NEIGBOUR_COUNT,
+    ALIVE_NEIGBOUR_COUNT
+  );
   render(matrix);
 }
 
@@ -89,6 +96,8 @@ let interval;
 playBtn.onclick = () => {
   interval = setInterval(update, 500);
   playBtn.disabled = true;
+  inputCols.disabled = true;
+  inputRows.disabled = true;
   stopBtn.disabled = false;
 };
 
@@ -97,5 +106,41 @@ stopBtn.disabled = true;
 stopBtn.onclick = () => {
   stopBtn.disabled = true;
   playBtn.disabled = false;
+  inputCols.disabled = false;
+  inputRows.disabled = false;
   clearInterval(interval);
+  interval = undefined;
 };
+
+canvas.onclick = ({ offsetX, offsetY }) => {
+  if (!interval) {
+    const row = Math.floor(offsetX / cellSize);
+    const col = Math.floor(offsetY / cellSize);
+    matrix[row][col] = matrix[row][col] ? 0 : 1;
+
+    render(matrix);
+  }
+};
+
+inputRows.onchange = ({ target }) => {
+  ROWS = Number(target.value);
+  matrix = buildMatrix();
+  canvas.width = COLS * cellSize;
+  canvas.height = ROWS * cellSize;
+  render(matrix);
+};
+inputCols.onchange = ({ target }) => {
+  COLS = Number(target.value);
+  matrix = buildMatrix();
+  canvas.width = COLS * cellSize;
+  canvas.height = ROWS * cellSize;
+  render(matrix);
+};
+inputSurvive.onchange = ({ target }) => {
+  SURVIVE_NEIGBOUR_COUNT = target.value.split("-").map(Number);
+};
+inputAlive.onchange = ({ target }) => {
+  ALIVE_NEIGBOUR_COUNT = Number(target.value);
+};
+
+render(matrix);

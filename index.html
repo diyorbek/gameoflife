@@ -8,26 +8,47 @@
     <div>
       <label>
         <span>Rows: </span>
-        <input id="inp-rows" type="number" min="3" value="20" />
+        <input id="inp-rows" type="number" min="3" value="10" />
       </label>
+      <br />
       <label>
         <span>Columns: </span>
-        <input id="inp-cols" type="number" min="3" value="20" />
+        <input id="inp-cols" type="number" min="3" value="10" />
       </label>
     </div>
 
     <div>
       <label>
-        <span>Rows: </span>
-        <input id="inp-n" type="number" min="3" value="20" />
+        <span>Survives if neighbour count: </span>
+        <select id="inp-survive">
+          <option value="2">2</option>
+          <option value="2-3" selected>2-3</option>
+          <option value="3">3</option>
+          <option value="3-4">3-4</option>
+          <option value="4">4</option>
+          <option value="4-5">4-5</option>
+          <option value="5">5</option>
+          <option value="5-6">5-6</option>
+          <option value="6">6</option>
+        </select>
+      </label>
+      <br />
+      <label>
+        <span>Becomes alive if neighbour count: </span>
+        <input id="inp-alive" type="number" min="1" value="3" />
       </label>
     </div>
 
     <div>
+      <br />
       <button id="playBtn">Play</button>
       <button id="stopBtn">Stop</button>
+      <br />
     </div>
-
+    <h4>
+      Click on cells to make them alive or dead. It is possible only when the
+      game is not playing.
+    </h4>
     <div>
       <canvas></canvas>
     </div>
